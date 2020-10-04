@@ -1,5 +1,6 @@
 package Semaphore;
 
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
 public class SharedTableSemaphore {
@@ -18,13 +19,8 @@ public class SharedTableSemaphore {
         this.philosophers = new int[this.tableSize];
 
         this.mutex = new Semaphore(1);
-        this.forks = new Semaphore[]{
-                new Semaphore(0),
-                new Semaphore(0),
-                new Semaphore(0),
-                new Semaphore(0),
-                new Semaphore(0),
-        };
+        this.forks = new Semaphore[this.tableSize];
+        Arrays.fill(this.forks, new Semaphore(0));
     }
 
     private int getLeft(int i) {
