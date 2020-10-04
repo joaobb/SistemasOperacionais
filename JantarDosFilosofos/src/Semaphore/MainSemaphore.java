@@ -1,4 +1,4 @@
-package com.company;
+package Semaphore;
 
 public class MainSemaphore {
     private static final int TABLE_SIZE = 5;

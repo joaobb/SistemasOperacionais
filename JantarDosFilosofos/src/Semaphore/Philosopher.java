@@ -1,4 +1,4 @@
-package com.company;
+package Semaphore;
 
 public class Philosopher implements Runnable {
     private final int i;
@@ -19,7 +19,7 @@ public class Philosopher implements Runnable {
         this.table = table;
         this.state = 0;
 
-        new Thread(this, "Philosopher").start();
+        new Thread(this, "Philosopher " + i).start();
     }
 
     private void think() {
@@ -27,7 +27,7 @@ public class Philosopher implements Runnable {
             System.out.printf("Philosopher %d > Starts THINKING.%n", i + 1);
             this.state = THINKING;
             Thread.sleep(this.timeToThink);
-            System.out.printf("Philosopher %d > Stops THINKING.%n", i + 1);
+            System.out.printf("Philosopher %d > Stops THINKING and will be HUNGRY.%n", i + 1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
