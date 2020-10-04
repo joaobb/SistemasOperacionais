@@ -9,7 +9,7 @@ public class Philosopher implements Runnable {
     private final int HUNGRY = 1;
     private final int EATING = 2;
 
-    private SharedTableSemaphore table;
+    private final SharedTableSemaphore table;
     private int state;
 
     Philosopher(int i, int timeToEat, int thinkTime, SharedTableSemaphore table) {
@@ -24,8 +24,10 @@ public class Philosopher implements Runnable {
 
     private void think() {
         try {
+            System.out.printf("Philosopher %d > Starts THINKING.%n", i + 1);
             this.state = THINKING;
             Thread.sleep(this.timeToThink);
+            System.out.printf("Philosopher %d > Stops THINKING.%n", i + 1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -33,34 +35,27 @@ public class Philosopher implements Runnable {
 
     private void eat() {
         try {
-            if (this.state == EATING) {
-                Thread.sleep(this.timeToEat);
-            }
+            this.state = EATING;
+            Thread.sleep(this.timeToEat);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     private void takeForks() {
-        if (this.table.takeForks(i)) {
-            this.state = EATING;
-        }
+        this.state = HUNGRY;
+        this.table.takeForks(i);
     }
 
     private void putForks() {
-        if (this.state == EATING) {
-            this.table.releaseForks(i);
-            this.state = THINKING;
-        }
+        this.table.releaseForks(i);
+        this.state = THINKING;
     }
 
     public void run() {
         while (true) {
             try {
-                System.out.printf("Philosopher %d > Starts thinking.%n", i);
                 think();
-                System.out.printf("Philosopher %d > Stops thinking.%n", i);
-
                 takeForks();
                 eat();
                 putForks();

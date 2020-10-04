@@ -1,75 +1,84 @@
 package com.company;
 
-import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
 public class SharedTableSemaphore {
+    private final int THINKING = 0;
+    private final int HUNGRY = 1;
+    private final int EATING = 2;
+
     private final int tableSize;
-    private final int[] table;
+    private final int[] philosophers;
 
     private final Semaphore mutex;
     private final Semaphore[] forks;
 
     SharedTableSemaphore(int tableSize) {
         this.tableSize = tableSize;
-        this.table = new int[this.tableSize];
+        this.philosophers = new int[this.tableSize];
 
         this.mutex = new Semaphore(1);
         this.forks = new Semaphore[]{
-                new Semaphore(1),
-                new Semaphore(1),
-                new Semaphore(1),
-                new Semaphore(1),
-                new Semaphore(1),
+                new Semaphore(0),
+                new Semaphore(0),
+                new Semaphore(0),
+                new Semaphore(0),
+                new Semaphore(0),
         };
     }
 
-    public boolean takeForks(int i) {
+    private int getLeft(int i) {
+        return (i + this.tableSize - 1) % this.tableSize;
+    }
+
+    private int getRight(int i) {
+        return (i + 1) % this.tableSize;
+    }
+
+    public void takeForks(int i) {
         try {
             mutex.acquire();
-            if (table[(i - 1) % this.tableSize] == 0 && table[i % this.tableSize] == 0) {
-                System.out.printf("Philosopher %d > Taking forks %d, and %d.%n",
-                        i, (i - 1) % this.tableSize, i % this.tableSize);
+            philosophers[i] = HUNGRY;
 
-                forks[(i - 1) % this.tableSize].acquire();
-                forks[(i) % this.tableSize].acquire();
+            printAction(i, "trying to take them forks", "HUNGRY", "EATING");
+            test(i);
 
-                table[(i - 1) % this.tableSize] = 1;
-                table[i % this.tableSize] = 1;
-
-                System.out.println(Arrays.toString(table));
-
-                mutex.release();
-                return true;
-            } else {
-                System.out.printf("Philosopher %d > Couldn't grab forks %d and %d. State: %s.%n", i, (i - 1) %
-                        this.tableSize, i % this.tableSize, Arrays.toString(table));
-            }
+            mutex.release();
+            forks[i].acquire();
         } catch (InterruptedException e) {
-            System.out.println("ERROR");
             e.printStackTrace();
         }
-        mutex.release();
-        return false;
     }
 
     public void releaseForks(int i) {
         try {
             mutex.acquire();
-            System.out.printf("Philosopher %d > Dropping forks %d, and %d.%n",
-                    i, (i - 1) % this.tableSize, i % this.tableSize);
-            System.out.println(Arrays.toString(table));
 
-            forks[(i - 1) % this.tableSize].release();
-            forks[(i) % this.tableSize].release();
+            printAction(i, "dropping forks", "EATING", "THINKING");
+            philosophers[i] = THINKING;
 
-            table[(i - 1) % this.tableSize] = 0;
-            table[i % this.tableSize] = 0;
+            test(getLeft(i));
+            test(getRight(i));
 
             mutex.release();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         mutex.release();
+    }
+
+    private void test(int i) {
+        if (philosophers[i] == HUNGRY && philosophers[getLeft(i)] != EATING && philosophers[getRight(i)] != EATING) {
+            printAction(i, "successfully taking forks", "HUNGRY", "EATING");
+            philosophers[i] = EATING;
+            forks[i].release();
+        } else if (philosophers[i] == HUNGRY) {
+            printAction(i, String.format("failed at taking forks since the philosopher %s is already eating",
+                    philosophers[getLeft(i)] == EATING ? getLeft(i) + 1 : getRight(i) + 1), "HUNGRY", "HUNGRY");
+        }
+    }
+
+    private void printAction(int id, String action, String currentState, String nextState) {
+        System.out.printf("Philosopher %d > Is %s %s and will be %s.%n", id + 1, currentState, action, nextState);
     }
 }
