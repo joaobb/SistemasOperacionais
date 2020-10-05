@@ -1,4 +1,4 @@
-package Semaphore;
+package Solution;
 
 public class Philosopher implements Runnable {
     private final int i;
@@ -9,10 +9,10 @@ public class Philosopher implements Runnable {
     private final int HUNGRY = 1;
     private final int EATING = 2;
 
-    private final SharedTableSemaphore table;
+    private final SharedTable table;
     private int state;
 
-    Philosopher(int i, int timeToEat, int thinkTime, SharedTableSemaphore table) {
+    Philosopher(int i, int timeToEat, int thinkTime, SharedTable table) {
         this.i = i;
         this.timeToEat = timeToEat;
         this.timeToThink = thinkTime;

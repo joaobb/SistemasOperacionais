@@ -1,4 +1,4 @@
-package Semaphore;
+package Solution;
 
 public class MainSemaphore {
     private static final int TABLE_SIZE = 5;
